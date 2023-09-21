@@ -1,4 +1,7 @@
 <script lang="ts">
+  import * as Avatar from "$components/ui/avatar";
+  import * as AlertDialog from "$components/ui/alert-dialog";
+
   import { uploadPluginSchema } from "$lib/validation";
 
   let errorMessage: string;

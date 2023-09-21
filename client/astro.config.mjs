@@ -6,9 +6,14 @@ import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [tailwind(), svelte()],
+  integrations: [
+    tailwind({
+      configFile: "./tailwind.config.js",
+    }),
+    svelte(),
+  ],
   output: "server",
   adapter: node({
-    mode: "standalone"
-  })
+    mode: "standalone",
+  }),
 });

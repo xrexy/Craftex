@@ -24,7 +24,9 @@
     "@planetscale/database": "^1.11.0",
     "@types/js-yaml": "^4.0.6",
     "astro": "^3.0.13",
+    "bits-ui": "^0.5.7",
     "buffer": "^6.0.3",
+    "clsx": "^2.0.0",
     "drizzle-kit": "^0.19.13",
     "drizzle-orm": "^0.28.6",
     "js-yaml": "^4.1.0",
@@ -32,6 +34,8 @@
     "lucia": "^2.5.0",
     "nanostores": "^0.9.3",
     "svelte": "^4.0.0",
+    "tailwind-merge": "^1.14.0",
+    "tailwind-variants": "^0.1.14",
     "tailwindcss": "^3.0.24",
     "zod": "^3.22.2"
   },
