@@ -1,7 +1,4 @@
 <script lang="ts">
-  import * as Avatar from "$components/ui/avatar";
-  import * as AlertDialog from "$components/ui/alert-dialog";
-
   import { uploadPluginSchema } from "$lib/validation";
 
   let errorMessage: string;
@@ -13,7 +10,7 @@
     errorMessageTimeout && clearTimeout(errorMessageTimeout);
     errorMessageTimeout = setTimeout(() => {
       errorMessage = "";
-    }, 1000);
+    }, 3000);
   }
 
   async function handleSubmit(e: SubmitEvent) {
@@ -22,7 +19,9 @@
     // validate on client before sending to server to minimize useless requests
     // make sure also validated on server-side
 
+    const formDataName = formData.get("name");
     const parseRes = uploadPluginSchema.safeParse({
+      name: formDataName?.length == 0 ? null : formDataName,
       description: formData.get("description"),
       file: formData.get("file"),
     });
@@ -34,6 +33,22 @@
       return setErrorMessage(
         `Invalid ${issue.path.join(".")}: ${issue.message}`
       );
+    }
+
+    if (parseRes.data?.name) {
+      console.log("bro wtf is going on");
+      const existsReq = await fetch(
+        `/api/plugin/exists_with_name?name=${parseRes.data.name}`
+      );
+
+      if (existsReq.status != 200)
+        return setErrorMessage("Sorry, we couldn't verify that plugin name");
+
+      const { data: existsRes } = await existsReq.json();
+      console.log(existsRes, "existsRes");
+      if (existsRes?.exists) {
+        return setErrorMessage("Plugin with that name already exists");
+      }
     }
 
     const request = await fetch("/api/plugin/create", {
@@ -59,6 +74,12 @@
   <textarea
     name="description"
     placeholder="Description"
+  />
+
+  <input
+    name="name"
+    placeholder="Name"
+    required={false}
   />
 
   <input

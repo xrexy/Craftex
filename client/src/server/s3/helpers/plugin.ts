@@ -3,20 +3,17 @@ import type { Plugin } from "$lib/types";
 import { uploadFile } from "./generic";
 import { getRequiredDataFromPluginYAML } from "$lib/helpers/parsers";
 
-export type S3UploadPluginData = {
-  id: string;
-  version: string | string[];
+export type ConstructPluginKeyInput = {
+  main: string;
+  version: string;
 };
 
-export const constructPluginKey = ({ id, version }: S3UploadPluginData) => {
-  const latest = Array.isArray(version) ? version.at(-1) : version;
-  // should never happen
-  if (!latest) {
-    throw new Error("No latest version found");
-  }
-
-  return `${id}/${latest}`;
-};
+export const constructPluginKey = ({
+  main,
+  version,
+}: ConstructPluginKeyInput) =>
+  // i know this is dumb might think of something better later.. (i wont)
+  `${main.split(".").slice(0, 3).join(".")}/${version}`;
 
 export const uploadPlugin = async (
   file: Blob,

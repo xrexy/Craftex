@@ -38,5 +38,6 @@ export const usernameWithPasswordSchema = z.object({
 export const requiredYAMLPluginDataSchema = z.object({
   name: z.string(),
   version: z.string(),
+  main: z.string(),
 });
 

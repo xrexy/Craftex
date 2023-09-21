@@ -1,8 +1,9 @@
 import type { APIRoute } from "astro";
 
+import { createId } from "$lib/helpers/cuid2";
+import { getRequiredDataFromPluginYAML } from "$lib/helpers/parsers";
 import { response } from "$lib/helpers/response";
 import { uploadPluginSchema } from "$lib/validation";
-import { createId } from "$lib/helpers/cuid2";
 import db from "$server/db";
 import { plugin } from "$server/db/schema";
 import {
@@ -10,8 +11,7 @@ import {
   fileExits,
   uploadPlugin,
 } from "$server/s3/helpers";
-import { getRequiredDataFromPluginYAML } from "$lib/helpers/parsers";
-import type { FailableResponse } from "$lib/types";
+import { DatabaseError, type ExecutedQuery } from "@planetscale/database";
 
 export const POST: APIRoute = async ({ locals, redirect, request }) => {
   const session = await locals.auth.validate();
@@ -19,8 +19,9 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
 
   // -- 1 -- Make sure the form data is valid
   const data = await request.formData();
+  let formDataName = data.get("name");
   const parseRes = uploadPluginSchema.safeParse({
-    name: data.get("name"),
+    name: formDataName?.length == 0 ? null : formDataName,
     description: data.get("description"),
     version: data.get("version"),
     file: data.get("file"),
@@ -32,27 +33,26 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
   }
 
   let name: string;
-  const { description, file, name: parsedName } = parseRes.data;
+  const { description, file, name: requestedName } = parseRes.data;
 
   // -- 2 -- Parse the plugin.yml file
-  const pluginYamlData = await getRequiredDataFromPluginYAML(file);
-  if (pluginYamlData.failed) {
-    return response.error(pluginYamlData.error);
+  const pluginMetadata = await getRequiredDataFromPluginYAML(file);
+  if (pluginMetadata.failed) {
+    return response.error(pluginMetadata.error);
   }
 
-  const { name: yamlName, version } = pluginYamlData.data;
+  const { name: metaName, version, main } = pluginMetadata.data;
 
-  name = parsedName ?? yamlName;
+  name = requestedName ?? metaName;
 
   // -- 4 -- Generate plugin "identifiers" (id, key)
-  const pluginId = createId(true);
-
-  // TODO for some reason keys deduplication doesnt work. prob some logic error rethink things later me
 
   const key = constructPluginKey({
-    id: session.user.userId,
-    version: pluginYamlData.data.version,
+    main,
+    version: pluginMetadata.data.version,
   });
+
+  console.log(`New plugin key ${key}`);
 
   // -- 3 -- Make sure the plugin isn't uploaded already on the cdn
   const pluginExits = await fileExits(key);
@@ -62,33 +62,45 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
     );
   }
 
-  // TODO do 4 and 5 in parallel and rollback if one fails
-
   // -- 4 -- Insert the plugin into the database
-  console.log("Inserting plugin");
-  console.table(parseRes.data);
+  console.table({ action: `start inserting ${key}` });
 
-  const createRes = await db.insert(plugin).values({
-    phase: "draft",
-    id: pluginId,
-    publisherId: session.user.userId,
-    name,
-    description,
-    versions: [version],
-    // TODO handle socials as well
-  });
-  console.log("Inserted plugin, affected", createRes.rowsAffected);
+  const pluginId = createId(true);
+
+  let createRes: ExecutedQuery;
+  try {
+    createRes = await db.insert(plugin).values({
+      phase: "draft",
+      id: pluginId,
+      publisherId: session.user.userId,
+      name,
+      description,
+      versions: [version],
+      // TODO handle socials as well
+    });
+  } catch (e) {
+    if (e instanceof DatabaseError && e.message) {
+      // this is sad but the best we can do with what the error body has
+      if (e.message.includes("plugin.plugin_name_unique")) {
+        return response.error(`Plugin with name '${name}' already exists.`);
+      }
+    }
+
+    console.error(e);
+    return response.error("Failed to create plugin. Please try again later.");
+  }
+
+  console.log(`inserted ${key}, affected`, createRes.rowsAffected);
 
   if (createRes.rowsAffected !== 1) {
     return response.error("Failed to create plugin. Please try again later.");
   }
 
   // -- 5 -- Upload the plugin to the CDN
-  console.log(`Uploading plugin with key ${key}`);
+  console.log(`${key}: uploading to cdn`);
   const uploadRes = await uploadPlugin(file, key);
 
-  console.log("Uploaded");
-  console.table(uploadRes);
+  console.log(`${key}: uploaded`);
 
   if (uploadRes.failed) {
     return response.error(`Failed to upload plugin to CDN: ${uploadRes.error}`);
