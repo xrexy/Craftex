@@ -12,6 +12,7 @@ import {
   uploadPlugin,
 } from "$server/s3/helpers";
 import { DatabaseError, type ExecutedQuery } from "@planetscale/database";
+import { desc } from "drizzle-orm";
 
 export const POST: APIRoute = async ({ locals, redirect, request }) => {
   const session = await locals.auth.validate();
@@ -33,7 +34,12 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
   }
 
   let name: string;
-  const { description, file, name: requestedName } = parseRes.data;
+  let description: string;
+  const {
+    description: requestedDescription,
+    file,
+    name: requestedName,
+  } = parseRes.data;
 
   // -- 2 -- Parse the plugin.yml file
   const pluginMetadata = await getRequiredDataFromPluginYAML(file);
@@ -44,14 +50,14 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
   const { name: metaName, version, main } = pluginMetadata.data;
 
   name = requestedName ?? metaName;
+  description =
+    requestedDescription ??
+    pluginMetadata.data?.description ??
+    // TODO better handling(mostly ui wise)
+    "No description provided.";
 
   // -- 4 -- Generate plugin "identifiers" (id, key)
-
-  const key = constructPluginKey({
-    main,
-    version: pluginMetadata.data.version,
-  });
-
+  const key = constructPluginKey({ main, version });
   console.log(`New plugin key ${key}`);
 
   // -- 3 -- Make sure the plugin isn't uploaded already on the cdn

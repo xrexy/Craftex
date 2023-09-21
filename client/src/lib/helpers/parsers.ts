@@ -23,6 +23,7 @@ export const extractPluginMetadata = async (
   return file.async("string").then((data) => {
     let toParse: any;
     if (type == "bukkit") toParse = YAML.load(data);
+    // TODO infer sponge plugin.links
     else if (type == "sponge") {
       const { plugins } = JSON.parse(data);
       if (plugins.length == 0) {

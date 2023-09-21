@@ -13,7 +13,9 @@ export const uploadPluginSchema = z.object({
   description: z
     .string()
     .min(disableMin ? 1 : 16)
-    .max(1024),
+    .max(1024)
+    .nullable()
+    .optional(),
   file: z
     .instanceof(Blob)
     .refine((file) => file.size < 1024 * 1024 * 10, {
@@ -39,5 +41,6 @@ export const requiredYAMLPluginDataSchema = z.object({
   name: z.string(),
   version: z.string(),
   main: z.string(),
+  description: z.string().optional().nullable(),
 });
 
