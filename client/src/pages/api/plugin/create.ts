@@ -82,7 +82,7 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
       name,
       description,
       versions: [version],
-      // TODO handle socials as well
+      // TODO handle socials as well (can also infer from sponges's plugin.links)
     });
   } catch (e) {
     if (e instanceof DatabaseError && e.message) {
