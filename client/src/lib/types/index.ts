@@ -24,4 +24,7 @@ export type FailableResponse<DataType = undefined, ErrorType = string> =
 
 export type ValidLuciaProviderIds = "username" | "github";
 
-export * from './drizzle'
+export type SubmitFn<Return = void> = (e: SubmitEvent) => Return;
+
+export * from "./drizzle";
+

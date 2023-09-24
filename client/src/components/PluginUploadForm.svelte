@@ -19,16 +19,18 @@
     // validate on client before sending to server to minimize useless requests
     // make sure also validated on server-side
 
-    const formDataName = formData.get("name");
+    const fdName = formData.get("name");
+    const fdDesc = formData.get("description");
     const parseRes = uploadPluginSchema.safeParse({
-      name: formDataName?.length == 0 ? null : formDataName,
-      description: formData.get("description"),
+      name: fdName?.length == 0 ? null : fdName,
+      description: fdDesc?.length == 0 ? null : fdDesc,
       file: formData.get("file"),
     });
 
     console.log(parseRes);
 
     if (!parseRes.success) {
+      // TODO add a helper function
       const issue = parseRes.error.issues[0];
       return setErrorMessage(
         `Invalid ${issue.path.join(".")}: ${issue.message}`

@@ -12,7 +12,6 @@ import {
   uploadPlugin,
 } from "$server/s3/helpers";
 import { DatabaseError, type ExecutedQuery } from "@planetscale/database";
-import { desc } from "drizzle-orm";
 
 export const POST: APIRoute = async ({ locals, redirect, request }) => {
   const session = await locals.auth.validate();
@@ -20,15 +19,17 @@ export const POST: APIRoute = async ({ locals, redirect, request }) => {
 
   // -- 1 -- Make sure the form data is valid
   const data = await request.formData();
-  let formDataName = data.get("name");
+  let fdName = data.get("name");
+  let fdDesc = data.get("description");
   const parseRes = uploadPluginSchema.safeParse({
-    name: formDataName?.length == 0 ? null : formDataName,
-    description: data.get("description"),
+    name: fdName?.length == 0 ? null : fdName,
+    description: fdDesc?.length == 0 ? null : fdDesc,
     version: data.get("version"),
     file: data.get("file"),
   });
 
   if (!parseRes.success) {
+    // TODO add a helper function
     const issue = parseRes.error.issues[0];
     return response.error(`Invalid ${issue.path.join(".")}: ${issue.message}`);
   }

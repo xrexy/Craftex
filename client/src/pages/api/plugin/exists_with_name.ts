@@ -16,6 +16,7 @@ export const GET: APIRoute = async ({ locals, redirect, request, url }) => {
   });
 
   if (!parseRes.success) {
+    // TODO add a helper function
     const issue = parseRes.error.issues[0];
     return response.error(`Invalid ${issue.path.join(".")}: ${issue.message}`);
   }
