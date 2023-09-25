@@ -1,0 +1,11 @@
+---
+import Layout from "$layouts/Layout.astro";
+import Form from "$components/PluginUploadForm.svelte";
+
+const session = await Astro.locals.auth.validate();
+if (!session) return Astro.redirect("/auth/login", 302);
+---
+
+<Layout title="Craftex - Upload plugin">
+  <Form client:load />
+</Layout>

@@ -1,0 +1,13 @@
+---
+import Layout from "$layouts/Layout.astro";
+import Form from "$components/RegisterForm.svelte";
+
+const session = await Astro.locals.auth.validate();
+if (session) return Astro.redirect("/", 302);
+---
+
+<Layout title="Register">
+  <h1>Register</h1>
+  <Form client:load />
+  <a href="/auth/login">Login</a>
+</Layout>

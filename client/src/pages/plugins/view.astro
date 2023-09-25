@@ -1,0 +1,11 @@
+---
+import PView from "$components/PluginView.svelte";
+import Layout from "$layouts/Layout.astro";
+
+const session = await Astro.locals.auth.validate();
+if (!session) return Astro.redirect("/auth/login", 302);
+---
+
+<Layout title="Craftex - Owned Plugins">
+  <PView client:load />
+</Layout>
