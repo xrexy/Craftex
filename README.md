@@ -1,10 +1,16 @@
-# Craftex [![CodeFactor](https://www.codefactor.io/repository/github/zertex-labs/craftex/badge/main)](https://www.codefactor.io/repository/github/zertex-labs/craftex/overview/main)
-Currently on stale. Everything old has been deleted and mayb be rebuilt in the futuure.
+# Craftex
+
+Current stack used:
+* Astro[*](https://astro.build/) - Using endpoints and SSR enabled by [@astrojs/node](https://docs.astro.build/en/guides/integrations-guide/node/)
+* Svelte[*](https://svelte.dev/) for the bulk of the ui
+* AWS S3[*](https://aws.amazon.com/s3/) for file storage
+* Planetscale[*](https://planetscale.com/) for persistent storage (MySQL)
+* Upstash Redis[*](https://upstash.com/) for caching and "temporary" storage
+* Tailwind[*](https://tailwindcss.com/)
+* Drizzle ORM[*](https://orm.drizzle.team/)
+* Lucia[*](https://lucia-auth.com/) for authentication
 
 <h2>Contributors!</h2>
-
-<a href="https://github.com/zertex-labs/Craftex/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=zertex-labs/Craftex" />
+<a href="https://github.com/xrexy/Craftex/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=xrexy/Craftex" />
 </a>
-
-[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=7d9fe05d4c14&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
